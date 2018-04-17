@@ -31,7 +31,7 @@ const {User} = require('./../server/models/user');
 
 var id = '5ad061dccfc6dff412cc6964';
 
-if (!ObjectID.isValid(id)){
+if (!ObjectID.isValid(id)) {
     console.log('ID not valid');
 } else {
     User.findById(id).then((user) => {
