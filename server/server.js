@@ -14,7 +14,7 @@ var app = express();
 const port = process.env.PORT;
 
 app.use(bodyParser.json());
- 
+
 app.post('/todos', authenticate, (req, res) => {
   var todo = new Todo({
     text: req.body.text,
@@ -40,18 +40,20 @@ app.get('/todos', authenticate, (req, res) => {
 
 app.get('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
-  
+
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
+
   Todo.findOne({
     _id: id,
     _creator: req.user._id
   }).then((todo) => {
-    if(!todo) {
+    if (!todo) {
       return res.status(404).send();
     }
-    res.status(200).send({todo});
+
+    res.send({todo});
   }).catch((e) => {
     res.status(400).send();
   });
@@ -63,13 +65,15 @@ app.delete('/todos/:id', authenticate, (req, res) => {
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
+
   Todo.findOneAndRemove({
     _id: id,
     _creator: req.user._id
   }).then((todo) => {
-    if(!todo) {
+    if (!todo) {
       return res.status(404).send();
     }
+
     res.send({todo});
   }).catch((e) => {
     res.status(400).send();
@@ -84,7 +88,7 @@ app.patch('/todos/:id', authenticate, (req, res) => {
     return res.status(404).send();
   }
 
-  if(_.isBoolean(body.completed) && body.completed) {
+  if (_.isBoolean(body.completed) && body.completed) {
     body.completedAt = new Date().getTime();
   } else {
     body.completed = false;
@@ -92,16 +96,17 @@ app.patch('/todos/:id', authenticate, (req, res) => {
   }
 
   Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((todo) => {
-    if(!todo) {
+    if (!todo) {
       return res.status(404).send();
     }
 
     res.send({todo});
   }).catch((e) => {
     res.status(400).send();
-  });
+  })
 });
 
+// POST /users
 app.post('/users', (req, res) => {
   var body = _.pick(req.body, ['email', 'password']);
   var user = new User(body);
@@ -112,7 +117,7 @@ app.post('/users', (req, res) => {
     res.header('x-auth', token).send(user);
   }).catch((e) => {
     res.status(400).send(e);
-  });
+  })
 });
 
 app.get('/users/me', authenticate, (req, res) => {
@@ -121,11 +126,11 @@ app.get('/users/me', authenticate, (req, res) => {
 
 app.post('/users/login', (req, res) => {
   var body = _.pick(req.body, ['email', 'password']);
-  
+
   User.findByCredentials(body.email, body.password).then((user) => {
     return user.generateAuthToken().then((token) => {
       res.header('x-auth', token).send(user);
-    })
+    });
   }).catch((e) => {
     res.status(400).send();
   });
@@ -140,7 +145,7 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Started at port ${port}`);
+  console.log(`Started up at port ${port}`);
 });
 
 module.exports = {app};
